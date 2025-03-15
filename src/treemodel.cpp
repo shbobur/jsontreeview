@@ -21,7 +21,7 @@ int TreeModel::rowCount(const QModelIndex& parent) const
 
 int TreeModel::columnCount(const QModelIndex& /*parent*/) const
 {
-    // This is basically flatten as a list model
+    // This is flatten as a list model
     return 1;
 }
 
@@ -84,6 +84,13 @@ bool TreeModel::setData(const QModelIndex& index, const QVariant& value, int rol
     }
 
     return false;
+}
+
+QHash<int, QByteArray> TreeModel::roleNames() const
+{
+    QHash<int, QByteArray> roles;
+    roles[Qt::DisplayRole] = "display";
+    return roles;
 }
 
 void TreeModel::addTopLevelItem(TreeItem* child)
@@ -172,9 +179,3 @@ TreeItem* TreeModel::internalPointer(const QModelIndex& index) const
     return static_cast<TreeItem*>(index.internalPointer());
 }
 
-QHash<int, QByteArray> TreeModel::roleNames() const 
-{
-    QHash<int, QByteArray> roles;
-    roles[Qt::DisplayRole] = "display";
-    return roles;
-}

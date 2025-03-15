@@ -7,7 +7,7 @@
 #include <QJsonObject>
 
 const QHash<int, QByteArray> JsonModel::_roles = {
-    { Qt::DisplayRole, "display" },  // Add DisplayRole for TreeView
+    { Qt::DisplayRole, "display" },
     { ValueRole, "value" },
     { KeyRole, "key" }
 };
@@ -20,9 +20,6 @@ JsonModel::JsonModel(QObject *parent)
 
 QHash<int, QByteArray> JsonModel::roleNames() const
 {
-    // QHash<int, QByteArray> roles = TreeModel::roleNames(); // Get base roles
-    // roles[ValueRole] = "value";
-    // roles[KeyRole] = "key";
     return _roles;
 }
 
@@ -30,7 +27,7 @@ void JsonModel::loadJson(const QString &path)
 {
     if (!QFile::exists(path)) {
         qCritical() << "error: File doesn't exists. Please check the file path:" << path;
-        return;
+        // return;
     }
 
     QFile jsonFile {path};
@@ -40,14 +37,12 @@ void JsonModel::loadJson(const QString &path)
         return;
     }
 
-    // Clear existing data
     clear();
 
     QJsonParseError error;
     auto doc = QJsonDocument::fromJson(jsonFile.readAll(), &error);
     qDebug() << "Loading JSON file:" << error.errorString();
 
-    // Create root item
     auto root = doc.isArray() ? QJsonValue(doc.array()) : QJsonValue(doc.object());
     
     // Load directly into root item
@@ -75,6 +70,59 @@ void JsonModel::loadJson(const QString &path)
     }
 }
 
+
+int JsonModel::role(const QString& roleName) const
+{
+    return _roles.key(roleName.toLatin1());
+}
+
+bool JsonModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+    if (!index.isValid())
+        return false;
+
+    auto item = static_cast<TreeItem*>(index.internalPointer());
+    if (!item)
+        return false;
+
+    QString strValue = value.toString();
+
+    // Convert string to appropriate type
+    QVariant newValue = value;
+    if (strValue == "null") {
+        newValue = QVariant();
+    } else if (strValue == "true" || strValue == "false") {
+        newValue = (strValue == "true");
+    } else if (strValue.contains('.')) {
+        bool ok;
+        double d = strValue.toDouble(&ok);
+        if (ok) newValue = d;
+        else newValue = strValue;
+    } else {
+        bool ok;
+        int i = strValue.toInt(&ok);
+        if (ok) newValue = i;
+        else newValue = strValue;
+    }
+
+    item->setData(newValue, ValueRole);
+
+    // Update display text
+    QString key = item->data(KeyRole).toString();
+    QString displayText = key.isEmpty() ? strValue : key + ": " + strValue;
+    item->setData(displayText, Qt::DisplayRole);
+
+    emit dataChanged(index, index, {ValueRole, Qt::DisplayRole});
+    return true;
+}
+
+Qt::ItemFlags JsonModel::flags(const QModelIndex &index) const
+{
+    Qt::ItemFlags flags = TreeModel::flags(index);
+    flags |= Qt::ItemFlag::ItemIsEditable;
+    return flags;
+}
+
 void JsonModel::loadValue(const QJsonValue &value, TreeItem *parent)
 {
     if (value.isObject()) {
@@ -85,7 +133,7 @@ void JsonModel::loadValue(const QJsonValue &value, TreeItem *parent)
 
             auto child = new TreeItem();
             child->setData(key, KeyRole);
-            child->setData(key, Qt::DisplayRole); // Set display role for TreeView
+            child->setData(key, Qt::DisplayRole);
 
             if (value.isArray() || value.isObject()) {
                 loadValue(value, child);
@@ -122,9 +170,4 @@ void JsonModel::loadValue(const QJsonValue &value, TreeItem *parent)
         child->setData(displayValue, Qt::DisplayRole);
         addItem(parent, child);
     }
-}
-
-int JsonModel::role(const QString& roleName) const
-{
-    return _roles.key(roleName.toLatin1());
 }

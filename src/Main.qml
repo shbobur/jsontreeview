@@ -9,70 +9,198 @@ Window {
     height: 480
     visible: true
     title: qsTr("JSON TreeView")
+    color: "#f5f5f5"
 
-    Flickable {
-        id: treeWidget
-        width: root.width * 0.4
+    Rectangle {
+        id: treeContainer
+        width: Math.min(root.width * 0.3, 200)
         height: root.height
-        contentHeight: root.height
 
-        TreeView {
-            id: tree
+        ScrollView {
+            id: scrollView
             anchors.fill: parent
-            model: jsonModel
+            anchors.margins: 1
+            
+            ScrollBar.vertical.policy: ScrollBar.AsNeeded
+            ScrollBar.vertical.visible: true
+            ScrollBar.vertical.interactive: true
+            ScrollBar.vertical.width: 8
+            
+            ScrollBar.horizontal.policy: ScrollBar.AsNeeded
+            ScrollBar.horizontal.visible: true
+            ScrollBar.horizontal.interactive: true
+            ScrollBar.horizontal.height: 8
 
-            delegate: TreeViewDelegate {
-                id: delegate
-                text: model.display || ""
-                implicitWidth: Math.max(200, 200 + leftPadding + rightPadding)
-                highlighted: hovered || selected
+            background: Rectangle {
+                color: "white"
+            }
 
-                onClicked: {
-                    if (model.value === null) {
-                        editableText.text = "null"
-                    } else if (model.value === true || model.value === false) {
-                        editableText.text = model.value.toString()
-                    } else {
-                        editableText.text = model.value || "<i>(expandable object)</i>"
+            TreeView {
+                id: tree
+                width: scrollView.width
+                model: jsonModel
+                clip: true
+
+                editTriggers: TreeView.DoubleClicked | TreeView.EditKeyPressed
+
+                delegate: Rectangle {
+                    id: delegate
+                    anchors.leftMargin: 5
+                    implicitWidth: parent.width
+                    implicitHeight: 30
+                    property bool selected: false
+                    color: selected ? "#e0e0e0" : (contentArea.containsMouse ? "#20000000" : "transparent")
+                    
+                    readonly property real indentation: 20
+                    readonly property real padding: 5
+
+                    required property bool hasChildren
+                    required property var model
+                    required property bool editing
+                    required property int depth
+                    required property int row
+                    required property int column
+
+                    // Expand/collapse indicator
+                    Label {
+                        id: indicator
+                        x: padding + (depth * indentation)
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.leftMargin: 5
+                        visible: hasChildren
+                        text: tree.isExpanded(row) ? "▼" : "▶"
+                        width: 20
+
+                        TapHandler {
+                            onSingleTapped: {
+                                if (hasChildren) {
+                                    tree.toggleExpanded(delegate.row)
+                                }
+                            }
+                        }
+                    }
+
+                    Item {
+                        id: contentArea
+                        anchors {
+                            left: indicator.right
+                            right: parent.right
+                            top: parent.top
+                            bottom: parent.bottom
+                            leftMargin: 5
+                        }
+                        
+                        property bool containsMouse: false
+
+                        Text {
+                            id: displayText
+                            anchors.fill: parent
+                            text: model.display || ""
+                            visible: !editing
+                            verticalAlignment: Text.AlignVCenter
+                            elide: Text.ElideRight
+                        }
+
+                        TextField {
+                            id: editField
+                            anchors.fill: parent
+                            visible: editing && !hasChildren
+                            text: model.value || ""
+                            verticalAlignment: TextField.AlignVCenter
+                            onAccepted: {
+                                tree.model.setData(tree.index(delegate.row, delegate.column), text, Qt.EditRole)
+                                editing = false
+                            }
+                            onEditingFinished: {
+                                editing = false
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            enabled: !editing
+                            hoverEnabled: true
+
+                            onClicked: function (mouse) {
+                                // Deselect all other items
+                                let items = tree.contentItem.children
+                                for (let i = 0; i < items.length; i++) {
+                                    if (items[i].selected) {
+                                        items[i].selected = false
+                                    }
+                                }
+                                // Select this item
+                                delegate.selected = true
+                                
+                                if (model.value === null) {
+                                    valueDisplay.text = "null"
+                                } else if (model.value === true || model.value === false) {
+                                    valueDisplay.text = model.value.toString()
+                                } else {
+                                    valueDisplay.text = model.value || ""
+                                }
+                            }
+
+                            onEntered: contentArea.containsMouse = true
+                            onExited: contentArea.containsMouse = false
+
+                            onDoubleClicked: function (mouse) {
+                                if (!hasChildren) {
+                                    editing = true
+                                    editField.forceActiveFocus()
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
 
-    Row {
+    Rectangle {
+        id: valueContainer
         anchors {
             top: parent.top
             right: parent.right
-            left: treeWidget.right
-            topMargin: 20
-            leftMargin: 20
-            rightMargin: 20
+            left: treeContainer.right
+            bottom: parent.bottom
+            margins: 10
         }
-        spacing: 10
+        color: "white"
+        radius: 4
 
-        Label {
-            id: label
-            text: "Clicked value: "
-            anchors.verticalCenter: parent.verticalCenter
-        }
+        Row {
+            anchors {
+                top: parent.top
+                right: parent.right
+                left: parent.left
+                margins: 10
+            }
+            spacing: 10
 
-        Rectangle {
-            height: editableText.contentHeight + 10
-            width: parent.width - label.width - parent.spacing
-            color: "#f0f0f0"  // Light gray
-            radius: 4
+            Label {
+                id: label
+                text: "Clicked value: "
+                anchors.verticalCenter: parent.verticalCenter
+            }
 
-            Text {
-                id: editableText
-                anchors {
-                    fill: parent
-                    margins: 5
+            Rectangle {
+                height: 30
+                width: parent.width - label.width - parent.spacing
+                color: "#f0f0f0"
+                radius: 4
+
+                Text {
+                    id: valueDisplay
+                    anchors {
+                        fill: parent
+                        margins: 5
+                    }
+                    wrapMode: Text.WordWrap
+                    font.pixelSize: 14
+                    text: "Select an item to view details"
+                    verticalAlignment: Text.AlignVCenter
                 }
-                wrapMode: Text.WordWrap
-                font.pixelSize: 14
-                text: "Select an item to view details"
-                verticalAlignment: Text.AlignVCenter
             }
         }
     }

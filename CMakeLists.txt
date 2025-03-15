@@ -8,8 +8,18 @@ find_package(Qt6 REQUIRED COMPONENTS Quick)
 
 qt_standard_project_setup(REQUIRES 6.5)
 
+# Copy resources to build directory
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
 qt_add_executable(appJsonTreeViewChallenge
     src/main.cpp
+    src/treeitem.h
+    src/treeitem.cpp
+    src/treemodel.h
+    src/treemodel.cpp
+    src/jsonmodel.h
+    src/jsonmodel.cpp
+    resources.qrc
 )
 
 qt_add_qml_module(appJsonTreeViewChallenge
@@ -17,9 +27,10 @@ qt_add_qml_module(appJsonTreeViewChallenge
     VERSION 1.0
     QML_FILES
         src/Main.qml
-        SOURCES src/treeitem.cpp src/treeitem.h src/treemodel.cpp src/treemodel.h
-        SOURCES src/jsonmodel.h src/jsonmodel.cpp
-        RESOURCES resources.qrc
+    SOURCES 
+        src/treeitem.cpp src/treeitem.h 
+        src/treemodel.cpp src/treemodel.h
+        src/jsonmodel.h src/jsonmodel.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

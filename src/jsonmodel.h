@@ -19,6 +19,8 @@ public:
     void loadJson(const QString &path);
 
     Q_INVOKABLE int role(const QString &roleName) const;
+    Q_INVOKABLE bool setData(const QModelIndex& index, const QVariant& value, int role) override;
+    Q_INVOKABLE Qt::ItemFlags flags(const QModelIndex &index) const override;
 
 private:
     void loadValue(const QJsonValue &value, TreeItem *parent);

@@ -1,5 +1,6 @@
 <RCC>
-    <qresource prefix="/json">
-        <file>src/demo_data.json</file>
+    <qresource prefix="/">
+        <file>src/Main.qml</file>
+        <file>resources/demo_data.json</file>
     </qresource>
 </RCC>
