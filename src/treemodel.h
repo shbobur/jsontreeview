@@ -41,8 +41,6 @@ public:
     explicit TreeModel(QObject* parent = nullptr);
     ~TreeModel() override;
 
-    // Overriden method from QAbstractItemModel
-
 public:
     int rowCount(const QModelIndex& index) const override;
     int columnCount(const QModelIndex& index) const override;
@@ -52,6 +50,8 @@ public:
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
+
+    QHash<int, QByteArray> roleNames() const override;
 
 public:
     //! Add an item to the top level.

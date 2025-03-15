@@ -1,0 +1,24 @@
+{
+    "title": "Sample JSON Tree",
+    "version": 1.0,
+    "active": true,
+    "config": {
+        "threshold": 0.75,
+        "items": ["item1", "item2", "item3"],
+        "options": {
+            "option1": null,
+            "option2": false,
+            "option3": [1, 2, 3, 4]
+        }
+    },
+    "data": [
+        {
+            "id": "a1",
+            "value": "Alpha"
+        },
+        {
+            "id": "b2",
+            "value": "Beta"
+        }
+    ]
+}

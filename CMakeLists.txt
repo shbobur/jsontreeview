@@ -19,6 +19,7 @@ qt_add_qml_module(appJsonTreeViewChallenge
         src/Main.qml
         SOURCES src/treeitem.cpp src/treeitem.h src/treemodel.cpp src/treemodel.h
         SOURCES src/jsonmodel.h src/jsonmodel.cpp
+        RESOURCES resources.qrc
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
