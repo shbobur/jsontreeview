@@ -27,7 +27,7 @@ void JsonModel::loadJson(const QString &path)
 {
     if (!QFile::exists(path)) {
         qCritical() << "error: File doesn't exists. Please check the file path:" << path;
-        // return;
+        return;
     }
 
     QFile jsonFile {path};

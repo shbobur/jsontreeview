@@ -1,10 +1,24 @@
 # JSON TreeView
 
-A Qt/QML application that displays JSON data in a tree view structure. The application allows users to:
-- View JSON data in a hierarchical tree structure
-- Expand/collapse nested objects and arrays
-- View values of selected items
-- Handle all JSON data types (objects, arrays, strings, numbers, booleans, null)
+A Qt/QML application that displays and edits JSON data in a tree structure.
+
+### Requirements
+- Qt 6.x
+- CMake 3.16+
+- C++17 compiler
+
+
+## Usage
+
+1. Launch the application
+2. Navigate the tree structure using expand/collapse indicators
+3. Edit values by:
+   - Double-clicking on a leaf node
+   - Modifying the value
+   - Pressing Enter to save
+
+
+<img src="docs/images/jsonviewer.png" alt="JSON Viewer" width="500">
 
 ## Requirements
 

@@ -13,9 +13,18 @@ public:
         KeyRole,
     };
 
+    //! Constructs a JsonModel with the given parent.
     explicit JsonModel(QObject *parent = nullptr);
 
+    /*!
+        Returns the role names used by the model.
+    */
     QHash<int, QByteArray> roleNames() const override;
+
+    /*!
+        Loads JSON data from the specified file \a path.
+        Returns true if loading was successful, false otherwise.
+    */
     void loadJson(const QString &path);
 
     Q_INVOKABLE int role(const QString &roleName) const;
